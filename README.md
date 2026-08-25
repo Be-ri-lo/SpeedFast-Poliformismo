@@ -1,9 +1,9 @@
 ![Duoc UC](https://www.duoc.cl/wp-content/uploads/2022/09/logo-0.png)
 
-# Actividad Formativa – Semana 1
-## Explorando la sobrecarga y sobreescritura
+# Actividad Formativa – Semana 2
+## Definiendo una clase abstracta y su jerarquía
 
-### Proyecto: SpeedFast – Polimorfismo
+### Proyecto: SpeedFast – Clases abstractas
 
 ---
 
@@ -20,12 +20,17 @@
 
 ## Descripción general del sistema
 
-**SpeedFast** es una empresa de reparto a domicilio que ofrece tres tipos de servicio: comida (restaurantes), encomiendas (documentos o paquetes) y compras express (supermercado o farmacia). Cada tipo de pedido aplica criterios distintos al momento de asignar un repartidor.
+**SpeedFast** es una empresa de reparto a domicilio que ofrece tres tipos de servicio: comida, encomiendas y compras express. En esta etapa, el sistema modela el **tiempo estimado de entrega** según el tipo de pedido y la distancia en kilómetros.
 
-Este proyecto implementa una jerarquía de clases en Java para representar esos pedidos, aplicando **polimorfismo** mediante:
+Se implementa una **clase abstracta** `Pedido` con atributos y comportamientos comunes, y tres subclases que personalizan el cálculo del tiempo de entrega:
 
-- **Sobrescritura (`@Override`)**: el método `asignarRepartidor()` se comporta de forma distinta en cada subclase.
-- **Sobrecarga**: el método `asignarRepartidor(String nombreRepartidor)` permite asignar un repartidor concreto e imprimir las validaciones propias del tipo de pedido.
+| Tipo de pedido | Fórmula de tiempo |
+|---|---|
+| `PedidoComida` | 15 min + 2 min por cada km |
+| `PedidoEncomienda` | 20 min + 1.5 min por km (redondeado a entero) |
+| `PedidoExpress` | 10 min base; si distancia > 5 km, se agregan 5 min extra |
+
+Además, se valida que la distancia esté entre **0.1 km (100 m)** y **100 km**, y el error se controla en `Main` con `try-catch` para mostrar un mensaje claro por consola.
 
 ---
 
@@ -33,11 +38,13 @@ Este proyecto implementa una jerarquía de clases en Java para representar esos 
 
 ```
 src/main/java/org/speedFast/
-├── Pedido.java              → Clase base: idPedido, direccionEntrega, tipoPedido
-├── PedidoComida.java        → Subclase: verifica mochila térmica
-├── PedidoEncomienda.java    → Subclase: valida peso y embalaje
-├── PedidoExpress.java       → Subclase: busca repartidor cercano disponible
-└── Main.java                → Prueba las tres subclases y ambas versiones del método
+├── model/
+│   ├── Pedido.java              → Clase abstracta: idPedido, direccionEntrega, distanciaKm
+│   ├── PedidoComida.java        → Implementa calcularTiempoEntrega() para comida
+│   ├── PedidoEncomienda.java    → Implementa calcularTiempoEntrega() para encomienda
+│   └── PedidoExpress.java       → Implementa calcularTiempoEntrega() para express
+└── app/
+    └── Main.java                → Ejecución principal; polimorfismo y manejo de excepciones
 ```
 
 > No se requiere lectura de archivos externos ni persistencia: los objetos de ejemplo se crean directamente en `Main`.
@@ -48,10 +55,12 @@ src/main/java/org/speedFast/
 
 | Relación | Tipo | Descripción |
 |---|---|---|
-| `PedidoComida`, `PedidoEncomienda`, `PedidoExpress` → `Pedido` | **Herencia** | Heredan atributos comunes y sobrescriben `asignarRepartidor()` |
-| `Pedido.asignarRepartidor()` / `Pedido.asignarRepartidor(String)` | **Sobrecarga** | Misma funcionalidad con distintas firmas |
-| Subclases → `asignarRepartidor()` / `asignarRepartidor(String)` | **Sobrescritura** | Cada tipo de pedido imprime su propia lógica de asignación |
-| `Main` → subclases de `Pedido` | Uso | Instancia un objeto de cada tipo y demuestra el polimorfismo |
+| `Pedido` | **Clase abstracta** | Define atributos comunes, `mostrarResumen()` e impone `calcularTiempoEntrega()` |
+| `PedidoComida`, `PedidoEncomienda`, `PedidoExpress` → `Pedido` | **Herencia** | Reutilizan el constructor y el resumen; implementan su propia fórmula de tiempo |
+| Subclases → `calcularTiempoEntrega()` | **Método abstracto / sobrescritura** | Cada tipo calcula el tiempo de forma distinta |
+| `Main` → `Pedido` | **Polimorfismo** | Usa un arreglo `Pedido[]` para recorrer los distintos tipos |
+| `Pedido` → `IllegalArgumentException` | **Validación** | Controla distancias fuera del rango permitido |
+| `Main` → excepción | **Manejo de errores** | Captura el error y muestra un mensaje amigable |
 
 ---
 
@@ -65,7 +74,7 @@ src/main/java/org/speedFast/
 ### Opción A – Desde IntelliJ IDEA (recomendada)
 
 1. Abrir el proyecto como proyecto Maven en IntelliJ IDEA.
-2. Navegar a `src/main/java/org/speedFast/Main.java`.
+2. Navegar a `src/main/java/org/speedFast/app/Main.java`.
 3. Hacer clic derecho → **Run 'Main.main()'**.
 
 ### Opción B – Desde terminal con Maven
@@ -73,7 +82,7 @@ src/main/java/org/speedFast/
 ```bash
 # Desde la raíz del proyecto
 mvn compile
-mvn exec:java -Dexec.mainClass="org.speedFast.Main"
+mvn exec:java -Dexec.mainClass="org.speedFast.app.Main"
 ```
 
 ### Opción C – Desde terminal (sin Maven)
@@ -82,7 +91,7 @@ mvn exec:java -Dexec.mainClass="org.speedFast.Main"
 # Desde la raíz del proyecto
 mkdir -p out
 javac -encoding UTF-8 -d out $(find src/main/java -name "*.java")
-java -cp out org.speedFast.Main
+java -cp out org.speedFast.app.Main
 ```
 
 ---
@@ -90,38 +99,55 @@ java -cp out org.speedFast.Main
 ## Salida esperada por consola
 
 ```
-[Pedido Comida]
-Asignando repartidor...
--> Verificando mochila térmica... OK
-Pedido asignado a Rosa Rojas
+=== Tiempos estimados de entrega SpeedFast ===
 
-[Pedido Encomienda]
-Asignando repartidor...
--> Validando peso y embalaje... OK
-Pedido asignado a Juanito De Los Palotes
+PedidoComida #001
+Dirección: Av. Italia 456
+Distancia: 2.7 km
+Tiempo estimado de entrega: 20.4 minutos
 
-[Pedido Express]
-Asignando repartidor...
--> Repartidor más cercano con disponibilidad inmediata encontrado.
-Pedido asignado a Toribio Toro
+PedidoEncomienda #002
+Dirección: Av. Independencia 123
+Distancia: 6.0 km
+Tiempo estimado de entrega: 29.0 minutos
+
+PedidoExpress #003
+Dirección: Av. Apoquindo 1500
+Distancia: 15.0 km
+Tiempo estimado de entrega: 15.0 minutos
+
+=== Comparación rápida ===
+Comida (#001):      20.4 min
+Encomienda (#002):  29.0 min
+Express (#003):     15.0 min
+```
+
+### Ejemplo de error controlado
+
+Si se ingresa una distancia inválida (menor a 0.1 km o mayor a 100 km), la consola muestra:
+
+```
+Error: La distancia de reparto debe estar entre 0.1 km (100 metros) y 100 km
 ```
 
 ---
 
 ## Buenas prácticas aplicadas
 
-- Encapsulamiento de atributos (`private`) en la clase base `Pedido`, con getters y setters.
-- Constructor completo y funcional en la clase base, reutilizado por las subclases con `super(...)`.
-- Método base genérico `asignarRepartidor()` como punto de partida para la herencia.
-- Sobrescritura del método en cada subclase con lógica diferenciada según el tipo de pedido.
-- Sobrecarga `asignarRepartidor(String nombreRepartidor)` para asignar un repartidor por nombre.
-- Demostración de polimorfismo desde `Main` instanciando las tres subclases.
-- Salida por consola clara y diferenciada por tipo de pedido.
+- Clase abstracta `Pedido` con atributos comunes encapsulados (`private`) y constructor completo.
+- Método concreto `mostrarResumen()` reutilizado por todas las subclases.
+- Método abstracto `calcularTiempoEntrega()` implementado de forma diferenciada en cada subclase.
+- Herencia funcional con `super(...)` en los constructores de las clases derivadas.
+- Polimorfismo explícito en `Main` mediante arreglo `Pedido[]`.
+- Validación de distancia en `setDistanciaKm(...)`, reutilizada desde el constructor.
+- Manejo controlado de `IllegalArgumentException` con `try-catch` en `Main`.
+- Separación de responsabilidades en paquetes `model` (dominio) y `app` (ejecución).
+- Salida por consola clara y comparativa entre tipos de pedido.
 
 ---
 
 **Repositorio GitHub:** https://github.com/Be-ri-lo/SpeedFast-Poliformismo
 
-**Fecha de entrega:** Semana 1 – Agosto 2026
+**Fecha de entrega:** Semana 2 – Agosto 2026
 
 © Duoc UC | Escuela de Informática y Telecomunicaciones
