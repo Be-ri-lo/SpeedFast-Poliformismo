@@ -41,3 +41,7 @@ build/
 
 # Carpeta de estudio (no es parte de la entrega)
 semana3Patron/
+
+# Entrega comprimida (solo local / plataforma Duoc)
+*.zip
+*.rar
