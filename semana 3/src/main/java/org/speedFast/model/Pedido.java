@@ -3,10 +3,13 @@ package org.speedFast.model;
 import org.speedFast.interfaces.Cancelable;
 import org.speedFast.interfaces.Despachable;
 import org.speedFast.interfaces.Rastreable;
+import org.speedFast.util.EstadoPedido;
 
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * Clase abstracta base de los pedidos SpeedFast.
+ * Define atributos comunes, el resumen y la sobrecarga de asignación de repartidor.
+ * Las subclases implementan el cálculo de tiempo y la asignación automática.
+ */
 public abstract class Pedido implements Despachable, Cancelable, Rastreable {
 
     private int idPedido;
@@ -14,30 +17,55 @@ public abstract class Pedido implements Despachable, Cancelable, Rastreable {
     private double distanciaKm;
     private String repartidor;
     private EstadoPedido estado;
-    private final List<String> eventos;
 
+    /**
+     * Crea un pedido reservado, sin repartidor asignado.
+     *
+     * @param idPedido          identificador del pedido
+     * @param direccionEntrega  dirección de destino
+     * @param distanciaKm       distancia en kilómetros
+     * @throws IllegalArgumentException si la distancia está fuera de 0.1 a 100 km
+     */
     public Pedido(int idPedido, String direccionEntrega, double distanciaKm) {
         this.idPedido = idPedido;
         this.direccionEntrega = direccionEntrega;
         setDistanciaKm(distanciaKm);
         this.repartidor = "Sin asignar";
         this.estado = EstadoPedido.RESERVADO;
-        this.eventos = new ArrayList<>();
-        registrarEvento("Pedido reservado");
     }
 
+    /**
+     * Muestra por consola los datos comunes del pedido.
+     */
     public void mostrarResumen() {
         System.out.println(getClass().getSimpleName() + " #" + formatearId());
         System.out.println("Dirección: " + direccionEntrega);
         System.out.println("Distancia: " + distanciaKm + " km");
-        System.out.println("Repartidor: " + repartidor);
+        System.out.println("Repartidor asignado: " + repartidor);
         System.out.println("Estado: " + estado.getEtiqueta());
+        System.out.println("Tiempo estimado: " + calcularTiempoEntrega() + " minutos");
     }
 
+    /**
+     * Calcula el tiempo estimado de entrega según el tipo de pedido.
+     *
+     * @return tiempo en minutos
+     */
     public abstract double calcularTiempoEntrega();
 
+    /**
+     * Asigna un repartidor de forma automática.
+     * Cada subclase sobrescribe este método con su propio criterio.
+     */
     public abstract void asignarRepartidor();
 
+    /**
+     * Asigna un repartidor de forma manual (sobrecarga).
+     *
+     * @param nombre nombre del repartidor
+     * @throws IllegalArgumentException si el nombre está vacío
+     * @throws IllegalStateException    si el pedido ya fue cancelado
+     */
     public void asignarRepartidor(String nombre) {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre del repartidor no puede estar vacío");
@@ -45,9 +73,15 @@ public abstract class Pedido implements Despachable, Cancelable, Rastreable {
         if (estado == EstadoPedido.CANCELADO) {
             throw new IllegalStateException("No se puede asignar un repartidor a un pedido cancelado");
         }
-        confirmarAsignacion(nombre.trim(), "asignación manual");
+        this.repartidor = nombre.trim();
+        this.estado = EstadoPedido.ASIGNADO;
     }
 
+    /**
+     * Despacha el pedido. Requiere tener un repartidor asignado.
+     *
+     * @throws IllegalStateException si está cancelado o aún no tiene repartidor
+     */
     @Override
     public void despachar() {
         if (estado == EstadoPedido.CANCELADO) {
@@ -57,9 +91,13 @@ public abstract class Pedido implements Despachable, Cancelable, Rastreable {
             throw new IllegalStateException("Debe asignarse un repartidor antes de despachar");
         }
         this.estado = EstadoPedido.DESPACHADO;
-        registrarEvento("Pedido despachado. Tiempo estimado: " + calcularTiempoEntrega() + " min");
     }
 
+    /**
+     * Cancela el pedido si todavía no ha sido despachado.
+     *
+     * @throws IllegalStateException si ya está despachado o cancelado
+     */
     @Override
     public void cancelar() {
         if (estado == EstadoPedido.DESPACHADO) {
@@ -69,27 +107,21 @@ public abstract class Pedido implements Despachable, Cancelable, Rastreable {
             throw new IllegalStateException("El pedido ya está cancelado");
         }
         this.estado = EstadoPedido.CANCELADO;
-        registrarEvento("Pedido cancelado");
     }
 
+    /**
+     * Muestra el estado actual y el repartidor del pedido.
+     */
     @Override
     public void verHistorial() {
-        System.out.println("Historial de " + getClass().getSimpleName() + " #" + formatearId());
-        for (String evento : eventos) {
-            System.out.println("  - " + evento);
-        }
+        System.out.println(getClass().getSimpleName() + " #" + formatearId()
+                + " | Estado: " + estado.getEtiqueta()
+                + " | Repartidor: " + repartidor);
     }
 
-    protected void confirmarAsignacion(String nombre, String criterio) {
-        this.repartidor = nombre;
-        this.estado = EstadoPedido.ASIGNADO;
-        registrarEvento("Repartidor asignado (" + criterio + "): " + nombre);
-    }
-
-    protected void registrarEvento(String detalle) {
-        eventos.add(detalle);
-    }
-
+    /**
+     * @return identificador con tres dígitos, por ejemplo 001
+     */
     public String formatearId() {
         return String.format("%03d", idPedido);
     }
@@ -110,6 +142,10 @@ public abstract class Pedido implements Despachable, Cancelable, Rastreable {
         return distanciaKm;
     }
 
+    /**
+     * @param distanciaKm distancia entre 0.1 y 100 km
+     * @throws IllegalArgumentException si el valor está fuera de rango
+     */
     public void setDistanciaKm(double distanciaKm) {
         if (distanciaKm < 0.1 || distanciaKm > 100) {
             throw new IllegalArgumentException("La distancia de reparto debe estar entre 0.1 km (100 metros) y 100 km");
@@ -121,11 +157,17 @@ public abstract class Pedido implements Despachable, Cancelable, Rastreable {
         return repartidor;
     }
 
-    public EstadoPedido getEstado() {
-        return estado;
+    /**
+     * Asigna el repartidor y deja el pedido en estado ASIGNADO.
+     *
+     * @param repartidor nombre del repartidor
+     */
+    public void setRepartidor(String repartidor) {
+        this.repartidor = repartidor;
+        this.estado = EstadoPedido.ASIGNADO;
     }
 
-    public List<String> getEventos() {
-        return eventos;
+    public EstadoPedido getEstado() {
+        return estado;
     }
 }
