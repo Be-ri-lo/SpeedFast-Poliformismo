@@ -42,15 +42,15 @@ La distancia se valida entre **0.1 km** y **100 km**. Los errores de negocio se 
 ## Estructura de paquetes y clases
 
 ```
-src/main/java/org/speedFast/
+semana 3/src/main/java/org/speedFast/
 ├── interfaces/
 │   ├── Despachable.java         → despachar()
 │   ├── Cancelable.java          → cancelar()
 │   └── Rastreable.java          → verHistorial()
 ├── model/
-│   ├── Pedido.java              → Clase abstracta (atributos, resumen, sobrecarga)
+│   ├── Pedido.java              → Clase abstracta, resumen, sobrecarga
 │   ├── PedidoComida.java        → Tiempo y asignación de comida
-│   ├── PedidoEncomienda.java    → Tiempo y asignación de encomienda
+│   ├── PedidoEncomienda.java    → Tiempo, asignación, peso y frágil
 │   └── PedidoExpress.java       → Tiempo y asignación express
 ├── service/
 │   └── ControladorDeEnvios.java → Coordina operaciones e historial (ArrayList)
@@ -100,8 +100,13 @@ classDiagram
         +asignarRepartidor()
     }
     class PedidoEncomienda {
+        -double peso
+        -boolean fragil
         +calcularTiempoEntrega() double
         +asignarRepartidor()
+        +setFragil(boolean)
+        +setPeso(double)
+        +esPesado() boolean
     }
     class PedidoExpress {
         +calcularTiempoEntrega() double
@@ -112,6 +117,7 @@ classDiagram
         -List~Pedido~ pedidos
         -List~String~ historialEntregas
         +registrarPedido(Pedido)
+        +seleccionar(Pedido)
         +despachar()
         +cancelar()
         +verHistorial()
@@ -170,7 +176,7 @@ classDiagram
 ### Opción A – Desde IntelliJ IDEA (recomendada)
 
 1. Abrir el proyecto como proyecto Maven en IntelliJ IDEA.
-2. Navegar a `src/main/java/org/speedFast/app/Main.java`.
+2. Navegar a `semana 3/src/main/java/org/speedFast/app/Main.java`.
 3. Hacer clic derecho → **Run 'Main.main()'**.
 
 ### Opción B – Desde terminal con Maven
@@ -199,6 +205,8 @@ Distancia: 6.0 km
 Repartidor asignado: Daniela Tapia
 Estado: Despachado
 Tiempo estimado: 29.0 minutos
+Frágil: Sí
+Peso: 22.0 kg (pesado)
 Pedido despachado correctamente.
 
 PedidoComida #001

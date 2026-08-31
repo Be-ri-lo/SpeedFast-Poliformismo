@@ -1,9 +1,9 @@
 ![Duoc UC](https://www.duoc.cl/wp-content/uploads/2022/09/logo-0.png)
 
-# Actividad Formativa – Semana 2
-## Definiendo una clase abstracta y su jerarquía
+# Actividad Sumativa – Semana 3
+## Diseñando un sistema orientado a objetos con clases abstractas, polimorfismo e interfaces
 
-### Proyecto: SpeedFast – Clases abstractas
+### Proyecto: SpeedFast – Sistema integral de entregas
 
 ---
 
@@ -20,47 +20,165 @@
 
 ## Descripción general del sistema
 
-**SpeedFast** es una empresa de reparto a domicilio que ofrece tres tipos de servicio: comida, encomiendas y compras express. En esta etapa, el sistema modela el **tiempo estimado de entrega** según el tipo de pedido y la distancia en kilómetros.
+**SpeedFast** es una empresa de reparto a domicilio que gestiona comida, encomiendas y compras express. La carpeta `src/` conserva la **semana 2** (clase abstracta y cálculo de tiempo). La entrega actual está en **`semana 3`**: se suman asignación de repartidor, interfaces, despacho, cancelación e historial.
 
-Se implementa una **clase abstracta** `Pedido` con atributos y comportamientos comunes, y tres subclases que personalizan el cálculo del tiempo de entrega:
+| Tipo de pedido | Fórmula de tiempo | Extra |
+|---|---|---|
+| `PedidoComida` | 15 min + 2 min por cada km | — |
+| `PedidoEncomienda` | 20 min + 1.5 min por km (redondeado) | `peso`, `fragil`; pesado si peso > 20 kg |
+| `PedidoExpress` | 10 min; +5 min si distancia > 5 km | — |
 
-| Tipo de pedido | Fórmula de tiempo |
-|---|---|
-| `PedidoComida` | 15 min + 2 min por cada km |
-| `PedidoEncomienda` | 20 min + 1.5 min por km (redondeado a entero) |
-| `PedidoExpress` | 10 min base; si distancia > 5 km, se agregan 5 min extra |
-
-Además, se valida que la distancia esté entre **0.1 km (100 m)** y **100 km**, y el error se controla en `Main` con `try-catch` para mostrar un mensaje claro por consola.
+La distancia se valida entre **0.1 km** y **100 km**. Los errores se controlan en `Main` con `try-catch`.
 
 ---
 
-## Estructura de paquetes y clases
+## Estructura del repositorio
 
 ```
-src/main/java/org/speedFast/
-├── model/
-│   ├── Pedido.java              → Clase abstracta: idPedido, direccionEntrega, distanciaKm
-│   ├── PedidoComida.java        → Implementa calcularTiempoEntrega() para comida
-│   ├── PedidoEncomienda.java    → Implementa calcularTiempoEntrega() para encomienda
-│   └── PedidoExpress.java       → Implementa calcularTiempoEntrega() para express
-└── app/
-    └── Main.java                → Ejecución principal; polimorfismo y manejo de excepciones
+SpeedFast-Poliformismo/
+├── src/main/java/org/speedFast/     → Semana 2
+│   ├── app/Main.java
+│   └── model/
+│       ├── Pedido.java
+│       ├── PedidoComida.java
+│       ├── PedidoEncomienda.java
+│       └── PedidoExpress.java
+└── semana 3/                        → Semana 3 (entrega)
+    ├── pom.xml
+    ├── README.md
+    └── src/main/java/org/speedFast/
+        ├── app/Main.java
+        ├── interfaces/
+        │   ├── Despachable.java
+        │   ├── Cancelable.java
+        │   └── Rastreable.java
+        ├── model/
+        │   ├── Pedido.java
+        │   ├── PedidoComida.java
+        │   ├── PedidoEncomienda.java
+        │   └── PedidoExpress.java
+        ├── service/
+        │   └── ControladorDeEnvios.java
+        └── util/
+            └── EstadoPedido.java
 ```
 
-> No se requiere lectura de archivos externos ni persistencia: los objetos de ejemplo se crean directamente en `Main`.
+### Paquetes de la semana 3
+
+```
+semana 3/src/main/java/org/speedFast/
+├── interfaces/   Despachable, Cancelable, Rastreable
+├── model/        Pedido (abstracta) y las tres hijas
+├── service/      ControladorDeEnvios (historial ArrayList)
+├── util/         EstadoPedido
+└── app/          Main (simulación)
+```
 
 ---
 
-## Relaciones entre clases
+## Diagrama de clases (semana 3)
+
+```mermaid
+classDiagram
+    class Despachable {
+        <<interface>>
+        +despachar()
+    }
+    class Cancelable {
+        <<interface>>
+        +cancelar()
+    }
+    class Rastreable {
+        <<interface>>
+        +verHistorial()
+    }
+
+    class Pedido {
+        <<abstract>>
+        -int idPedido
+        -String direccionEntrega
+        -double distanciaKm
+        -String repartidor
+        -EstadoPedido estado
+        +mostrarResumen()
+        +calcularTiempoEntrega()* double
+        +asignarRepartidor()*
+        +asignarRepartidor(String nombre)
+        +despachar()
+        +cancelar()
+        +verHistorial()
+    }
+
+    class PedidoComida {
+        +calcularTiempoEntrega() double
+        +asignarRepartidor()
+    }
+
+    class PedidoEncomienda {
+        -double peso
+        -boolean fragil
+        +calcularTiempoEntrega() double
+        +asignarRepartidor()
+        +setFragil(boolean)
+        +setPeso(double)
+        +esPesado() boolean
+    }
+
+    class PedidoExpress {
+        +calcularTiempoEntrega() double
+        +asignarRepartidor()
+    }
+
+    class ControladorDeEnvios {
+        -List~Pedido~ pedidos
+        -List~String~ historialEntregas
+        +registrarPedido(Pedido)
+        +seleccionar(Pedido)
+        +despachar()
+        +cancelar()
+        +verHistorial()
+    }
+
+    class EstadoPedido {
+        <<enumeration>>
+        RESERVADO
+        ASIGNADO
+        DESPACHADO
+        CANCELADO
+    }
+
+    Despachable <|.. Pedido
+    Cancelable <|.. Pedido
+    Rastreable <|.. Pedido
+    Despachable <|.. ControladorDeEnvios
+    Cancelable <|.. ControladorDeEnvios
+    Rastreable <|.. ControladorDeEnvios
+    Pedido <|-- PedidoComida
+    Pedido <|-- PedidoEncomienda
+    Pedido <|-- PedidoExpress
+    Pedido --> EstadoPedido
+    ControladorDeEnvios o-- Pedido
+```
+
+### Relaciones
 
 | Relación | Tipo | Descripción |
 |---|---|---|
-| `Pedido` | **Clase abstracta** | Define atributos comunes, `mostrarResumen()` e impone `calcularTiempoEntrega()` |
-| `PedidoComida`, `PedidoEncomienda`, `PedidoExpress` → `Pedido` | **Herencia** | Reutilizan el constructor y el resumen; implementan su propia fórmula de tiempo |
-| Subclases → `calcularTiempoEntrega()` | **Método abstracto / sobrescritura** | Cada tipo calcula el tiempo de forma distinta |
-| `Main` → `Pedido` | **Polimorfismo** | Usa un arreglo `Pedido[]` para recorrer los distintos tipos |
-| `Pedido` → `IllegalArgumentException` | **Validación** | Controla distancias fuera del rango permitido |
-| `Main` → excepción | **Manejo de errores** | Captura el error y muestra un mensaje amigable |
+| `Pedido` | **Clase abstracta** | Atributos comunes, `mostrarResumen()`, `calcularTiempoEntrega()` y `asignarRepartidor()` abstractos |
+| Subclases → `Pedido` | **Herencia** | Reutilizan constructor y resumen; cada una define tiempo y asignación |
+| `asignarRepartidor()` | **Sobrescritura** | Cada hija asigna su repartidor automático |
+| `asignarRepartidor(String)` | **Sobrecarga** | Asignación manual con un nombre |
+| Interfaces | **Desacoplamiento** | `Despachable`, `Cancelable` y `Rastreable` en `Pedido` y en `ControladorDeEnvios` |
+| `ControladorDeEnvios` | **Coordinación** | Despacha, cancela y guarda el historial en un `ArrayList` |
+| `PedidoEncomienda` | **Atributos propios** | `peso` y `fragil`; `esPesado()` si peso > 20 kg |
+
+---
+
+## Cómo contribuye el diseño a la calidad del software
+
+- **Escalabilidad:** un nuevo tipo de pedido es otra subclase de `Pedido`, sin reescribir `Main` ni el controlador.
+- **Reutilización:** resumen, validación de distancia, despacho y cancelación viven en la clase abstracta.
+- **Mantenibilidad:** `Main` puede trabajar con `Despachable` o `Rastreable` sin conocer la clase concreta.
 
 ---
 
@@ -68,86 +186,83 @@ src/main/java/org/speedFast/
 
 ### Requisitos previos
 
-- Java JDK 17 o superior (el proyecto fue compilado y probado con JDK 26)
-- Maven 3.x (o abrir directamente en IntelliJ IDEA)
+- Java JDK 17 o superior (probado con JDK 26)
+- Maven 3.x, o abrir el proyecto en IntelliJ IDEA
 
-### Opción A – Desde IntelliJ IDEA (recomendada)
+### Semana 3 (entrega actual)
 
-1. Abrir el proyecto como proyecto Maven en IntelliJ IDEA.
-2. Navegar a `src/main/java/org/speedFast/app/Main.java`.
-3. Hacer clic derecho → **Run 'Main.main()'**.
-
-### Opción B – Desde terminal con Maven
+En IntelliJ: `semana 3/src/main/java/org/speedFast/app/Main.java` → Run.
 
 ```bash
-# Desde la raíz del proyecto
-mvn compile
-mvn exec:java -Dexec.mainClass="org.speedFast.app.Main"
+mkdir -p out-s3
+javac -encoding UTF-8 -d out-s3 $(find "semana 3/src/main/java" -name "*.java")
+java -cp out-s3 org.speedFast.app.Main
 ```
 
-### Opción C – Desde terminal (sin Maven)
+### Semana 2 (carpeta `src/`)
+
+En IntelliJ: `src/main/java/org/speedFast/app/Main.java` → Run.
 
 ```bash
-# Desde la raíz del proyecto
-mkdir -p out
-javac -encoding UTF-8 -d out $(find src/main/java -name "*.java")
-java -cp out org.speedFast.app.Main
+mvn compile
+java -cp target/classes org.speedFast.app.Main
 ```
 
 ---
 
-## Salida esperada por consola
+## Salida esperada por consola (semana 3)
 
 ```
-=== Tiempos estimados de entrega SpeedFast ===
+PedidoEncomienda #002
+Dirección: Av. Independencia 123
+Distancia: 6.0 km
+Repartidor asignado: Daniela Tapia
+Estado: Despachado
+Tiempo estimado: 29.0 minutos
+Frágil: Sí
+Peso: 22.0 kg (pesado)
+Pedido despachado correctamente.
 
 PedidoComida #001
 Dirección: Av. Italia 456
 Distancia: 2.7 km
-Tiempo estimado de entrega: 20.4 minutos
+Repartidor asignado: Luis Díaz
+Estado: Despachado
+Tiempo estimado: 20.4 minutos
+Pedido despachado correctamente.
 
-PedidoEncomienda #002
-Dirección: Av. Independencia 123
-Distancia: 6.0 km
-Tiempo estimado de entrega: 29.0 minutos
+Cancelando Pedido Express #003...
+→ Pedido cancelado exitosamente.
 
 PedidoExpress #003
 Dirección: Av. Apoquindo 1500
 Distancia: 15.0 km
-Tiempo estimado de entrega: 15.0 minutos
+Repartidor asignado: Carlos Soto
+Estado: Cancelado
+Tiempo estimado: 15.0 minutos
 
-=== Comparación rápida ===
-Comida (#001):      20.4 min
-Encomienda (#002):  29.0 min
-Express (#003):     15.0 min
-```
-
-### Ejemplo de error controlado
-
-Si se ingresa una distancia inválida (menor a 0.1 km o mayor a 100 km), la consola muestra:
-
-```
-Error: La distancia de reparto debe estar entre 0.1 km (100 metros) y 100 km
+Historial:
+- PedidoEncomienda #002 – entregado por Daniela Tapia
+- PedidoComida #001 – entregado por Luis Díaz
 ```
 
 ---
 
 ## Buenas prácticas aplicadas
 
-- Clase abstracta `Pedido` con atributos comunes encapsulados (`private`) y constructor completo.
-- Método concreto `mostrarResumen()` reutilizado por todas las subclases.
-- Método abstracto `calcularTiempoEntrega()` implementado de forma diferenciada en cada subclase.
-- Herencia funcional con `super(...)` en los constructores de las clases derivadas.
-- Polimorfismo explícito en `Main` mediante arreglo `Pedido[]`.
-- Validación de distancia en `setDistanciaKm(...)`, reutilizada desde el constructor.
-- Manejo controlado de `IllegalArgumentException` con `try-catch` en `Main`.
-- Separación de responsabilidades en paquetes `model` (dominio) y `app` (ejecución).
-- Salida por consola clara y comparativa entre tipos de pedido.
+- Clase abstracta `Pedido` con atributos encapsulados y constructor completo.
+- `mostrarResumen()` reutilizado por las subclases.
+- `calcularTiempoEntrega()` abstracto, implementado en cada hija.
+- Sobrescritura y sobrecarga de `asignarRepartidor`.
+- Interfaces `Despachable`, `Cancelable` y `Rastreable`.
+- Historial en `ArrayList` dentro de `ControladorDeEnvios`.
+- Validación de distancia, peso y estados inválidos.
+- Separación en paquetes `interfaces`, `model`, `service`, `util` y `app`.
 
 ---
 
 **Repositorio GitHub:** https://github.com/Be-ri-lo/SpeedFast-Poliformismo
 
-**Fecha de entrega:** Semana 2 – Agosto 2026
+**Fecha de entrega:** Semana 3 – Agosto 2026
 
 © Duoc UC | Escuela de Informática y Telecomunicaciones
