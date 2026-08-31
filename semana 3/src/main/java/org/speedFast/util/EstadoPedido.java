@@ -1,5 +1,8 @@
-package org.speedFast.model;
+package org.speedFast.util;
 
+/**
+ * Estados posibles de un pedido durante su ciclo de vida.
+ */
 public enum EstadoPedido {
     RESERVADO("Reservado"),
     ASIGNADO("Asignado"),
@@ -12,6 +15,9 @@ public enum EstadoPedido {
         this.etiqueta = etiqueta;
     }
 
+    /**
+     * @return texto del estado para mostrar en consola
+     */
     public String getEtiqueta() {
         return etiqueta;
     }

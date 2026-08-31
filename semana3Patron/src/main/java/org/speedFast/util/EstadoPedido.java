@@ -1,5 +1,8 @@
-package org.speedFast.model;
+package org.speedFast.util;
 
+/**
+ * Estados posibles de un pedido durante su ciclo de vida.
+ */
 public enum EstadoPedido {
     RESERVADO("Reservado"),
     ASIGNADO("Asignado"),
