@@ -15,15 +15,4 @@ public class PedidoExpress extends Pedido {
         }
         return tiempoBase;
     }
-
-    @Override
-    public void asignarRepartidor() {
-        confirmarAsignacion("Ana Torres (bici eléctrica - express)", "asignación automática");
-    }
-
-    @Override
-    public void despachar() {
-        super.despachar();
-        registrarEvento("Despacho prioritario express activado");
-    }
 }
