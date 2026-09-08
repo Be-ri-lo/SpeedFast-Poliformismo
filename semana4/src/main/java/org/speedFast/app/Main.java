@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 public class Main {
 
     public static void main(String[] args) {
-        // pool de 3 hilos fijos (un hilo por repartidor)
+
         ExecutorService executor = Executors.newFixedThreadPool(3);
 
         // Camila

@@ -13,12 +13,11 @@ import java.util.Random;
  * y muestra el avance por consola.
  */
 // implements Runnable = esta clase se puede ejecutar en un hilo
-// Runnable es de Java (java.lang), no se crea en el proyecto
 public class Repartidor implements Runnable {
 
-    private String nombre; // ej: Camila, Luis, Daniela
-    private List<Pedido> pedidosAsignados; // los pedidos que le tocan a este repartidor
-    private Random random; // para que Thread.sleep no dure siempre lo mismo
+    private String nombre;
+    private List<Pedido> pedidosAsignados;
+    private Random random;
 
     /**
      * Crea un repartidor sin pedidos asignados.
@@ -31,7 +30,7 @@ public class Repartidor implements Runnable {
             throw new IllegalArgumentException("El nombre del repartidor no puede estar vacío");
         }
         this.nombre = nombre.trim();
-        this.pedidosAsignados = new ArrayList<>(); // empieza sin pedidos
+        this.pedidosAsignados = new ArrayList<>();
         this.random = new Random();
     }
 
