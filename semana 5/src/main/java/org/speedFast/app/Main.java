@@ -28,9 +28,9 @@ public class Main {
         // Se crean 3 hilos de tipo Repartidor
         ExecutorService executor = Executors.newFixedThreadPool(3);
         // se crean los repartidores (hilos)
-        executor.execute(new Repartidor("Juan", zona));
         executor.execute(new Repartidor("Camila", zona));
-        executor.execute(new Repartidor("Pedro", zona));
+        executor.execute(new Repartidor("Luis", zona));
+        executor.execute(new Repartidor("Daniela", zona));
 
         //Se espera hasta que todos los hilos terminen
         executor.shutdown();
