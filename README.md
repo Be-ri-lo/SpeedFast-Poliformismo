@@ -1,9 +1,8 @@
 ![Duoc UC](https://www.duoc.cl/wp-content/uploads/2022/09/logo-0.png)
 
-# Actividad Formativa – Semana 4
-## Ejecutando tareas en paralelo con hilos en Java
+# SpeedFast – Sistema de entregas
 
-### Proyecto: SpeedFast – Optimización de entregas
+### Actividad actual: Semana 5 – Sincronizando procesos en sistemas concurrentes
 
 ---
 
@@ -18,15 +17,19 @@
 
 ---
 
-## Descripción general del sistema
+## Descripción general
 
-**SpeedFast** es una empresa de reparto a domicilio que gestiona comida, encomiendas y compras express. La carpeta `src/` conserva la **semana 2**. La carpeta `semana 3/` conserva interfaces y polimorfismo. La entrega actual está en **`semana4`**: cada repartidor corre como un hilo (`Runnable`) y `Main` los lanza en paralelo con `ExecutorService`.
+**SpeedFast** es una empresa de reparto a domicilio. El repositorio guarda el avance por semana:
 
-| Tipo de pedido | Fórmula de tiempo |
-|---|---|
-| `PedidoComida` | 15 min + 2 min por cada km |
-| `PedidoEncomienda` | 20 min + 1.5 min por km (redondeado) |
-| `PedidoExpress` | 10 min; +5 min si distancia > 5 km |
+| Carpeta | Semana | Tema |
+|---|---|---|
+| `src/` | Semana 2 | Pedidos y subclases |
+| `semana 3/` | Semana 3 | Interfaces y polimorfismo |
+| `semana4/` | Semana 4 | Hilos y `ExecutorService` |
+| `semana 5/` | **Semana 5 (entrega)** | Sincronización de la zona de carga |
+| `semana 5 alternativa/` | Extra | Igual que semana 5, más un `Monitor` |
+
+En la semana 5 varios repartidores acceden a la **misma** zona de carga. Con `synchronized` cada pedido lo retira un solo hilo.
 
 ---
 
@@ -36,38 +39,39 @@
 SpeedFast-Poliformismo/
 ├── src/main/java/org/speedFast/     → Semana 2
 ├── semana 3/                        → Semana 3
-└── semana4/                         → Semana 4 (entrega)
-    ├── pom.xml
-    ├── README.md
-    └── src/main/java/org/speedFast/
-        ├── app/Main.java
-        ├── interfaces/
-        ├── model/  (Pedido, subclases y Repartidor)
-        └── util/EstadoPedido.java
+├── semana4/                         → Semana 4
+├── semana 5/                        → Semana 5 (entrega)
+│   ├── pom.xml
+│   ├── README.md
+│   └── src/main/java/org/speedFast/
+│       ├── app/Main.java
+│       ├── model/  (Pedido, ZonaDeCarga, Repartidor)
+│       └── util/EstadoPedido.java
+└── semana 5 alternativa/            → Extra con Monitor (no se pide en las instrucciones)
 ```
 
-Más detalle en `semana4/README.md`.
+Más detalle en `semana 5/README.md`.
 
-### Ejecutar (semana 4)
+### Ejecutar (semana 5)
 
-En IntelliJ: `semana4/src/main/java/org/speedFast/app/Main.java` → Run.
+En IntelliJ: `semana 5/src/main/java/org/speedFast/app/Main.java` → Run.
 
 ```
-Cancelando PedidoExpress #107...
-Estado actual: CANCELADO
-
-[Repartidor: Camila] Entregando PedidoComida #101...
-[Repartidor: Luis] Entregando PedidoExpress #102...
-[Repartidor: Camila] Pedido #101 entregado.
-[Repartidor: Luis] Pedido #107 cancelado. No se entrega.
+[Zona de carga inicializada]
+Pedido #1 agregado. Destino: Santiago Centro
 ...
-[Main] Sistema finalizado.
+[Repartidor - Juan] Retirando pedido #1...
+[Repartidor - Juan] Estado: EN_REPARTO
+[Repartidor - Juan] Entregando pedido #1...
+[Repartidor - Juan] Estado: ENTREGADO
+...
+Todos los pedidos han sido entregados correctamente.
 ```
 
 ---
 
 **Repositorio GitHub:** https://github.com/Be-ri-lo/SpeedFast-Poliformismo
 
-**Fecha de entrega:** Semana 4 – Septiembre 2026
+**Fecha de entrega:** Semana 5 – Septiembre 2026
 
 © Duoc UC | Escuela de Informática y Telecomunicaciones
