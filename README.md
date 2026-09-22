@@ -1,9 +1,9 @@
 ![Duoc UC](https://www.duoc.cl/wp-content/uploads/2022/09/logo-0.png)
 
-# Actividad Sumativa – Semana 5
-## Sincronizando procesos en sistemas concurrentes
+# Actividad Formativa – Semana 6
+## Diseñando interfaces gráficas para aplicaciones en Java
 
-### Proyecto: SpeedFast – Coordinación de entregas
+### Proyecto: SpeedFast – Interfaz gráfica de gestión de entregas
 
 ---
 
@@ -20,45 +20,60 @@
 
 ## Descripción general del sistema
 
-**SpeedFast** es una empresa de reparto a domicilio. Durante el despacho, varios repartidores llegan **al mismo tiempo** a la zona de carga y podrían retirar el mismo pedido.
+**SpeedFast** es una empresa de reparto a domicilio. En las semanas anteriores se modelaron los pedidos, el polimorfismo y las entregas concurrentes. Esta semana el sistema pasa de la consola a una **interfaz gráfica de escritorio** con Java Swing.
 
-Esta semana el recurso compartido es la **zona de carga**. Las encomiendas se guardan en un `BlockingQueue` y se retiran **de uno en uno**, con métodos `synchronized`, para que cada pedido lo entregue un solo repartidor.
+Desde la ventana principal se puede:
 
-El ciclo de cada encomienda es:
+1. **Registrar** un pedido nuevo (comida, encomienda o express).
+2. **Listar** los pedidos en una tabla.
+3. **Asignar un repartidor** e **iniciar la entrega**.
 
-`PENDIENTE` → `EN_REPARTO` → `ENTREGADO`
+Los datos se guardan en una lista en memoria. **No hay conexión a base de datos** (eso corresponde a las semanas 7 y 8).
 
-| Clase | Rol |
+| Tipo de pedido | Fórmula de tiempo |
 |---|---|
-| `Pedido` | Encomienda con id, dirección y estado |
-| `EstadoPedido` | `PENDIENTE`, `EN_REPARTO`, `ENTREGADO` |
-| `ZonaDeCarga` | Recurso compartido (`BlockingQueue` + `synchronized`) |
-| `Repartidor` | Hilo que retira, entrega y marca el pedido |
-| `Main` | Crea 5 pedidos y lanza 3 repartidores |
+| `PedidoComida` | 15 min + 2 min por cada km |
+| `PedidoEncomienda` | 20 min + 1.5 min por km (redondeado a entero) |
+| `PedidoExpress` | 10 min base; si distancia > 5 km, se agregan 5 min extra |
+
+La distancia se valida entre **0.1 km** y **100 km**. El ID no se puede repetir. Los errores se muestran con `JOptionPane` sin cerrar el programa.
 
 ---
 
 ## Estructura de paquetes y clases
 
-La entrega de esta semana está en la carpeta **`semana 5`**.
+La entrega de esta semana está en la carpeta **`semana 6`**, con los paquetes `modelo`, `vista`, `main` y `controlador`.
 
 ```
 SpeedFast-Poliformismo/
 ├── src/                             → Semana 4 (código de la raíz)
 ├── semana 3/                        → Semana 3 (historial)
 ├── semana4/                         → Semana 4 (historial)
-└── semana 5/                        → Semana 5 (entrega sumativa)
+├── semana 5/                        → Semana 5 (historial)
+└── semana 6/                        → Semana 6 (entrega formativa)
     ├── pom.xml
     ├── README.md
-    └── src/main/java/org/speedFast/
-        ├── model/
-        │   ├── Pedido.java          → id, direccionEntrega, estado
-        │   ├── ZonaDeCarga.java     → BlockingQueue + synchronized
-        │   └── Repartidor.java      → implements Runnable
-        ├── util/
-        │   └── EstadoPedido.java    → PENDIENTE, EN_REPARTO, ENTREGADO
-        └── app/
-            └── Main.java            → ExecutorService + 3 hilos
+    └── src/main/java/
+        ├── main/
+        │   └── Main.java                    → new VentanaPrincipal()
+        ├── controlador/
+        │   ├── ControladorPedidos.java      → lista de pedidos en memoria
+        │   ├── ControladorRepartidores.java → nombres y asignación
+        │   └── ControladorEntregas.java     → hilos de TareaEntrega
+        ├── tareas/
+        │   └── TareaEntrega.java            → implements Runnable (hilo de entrega)
+        ├── modelo/
+        │   ├── Pedido.java                  → clase abstracta
+        │   ├── PedidoComida.java
+        │   ├── PedidoEncomienda.java
+        │   ├── PedidoExpress.java
+        │   ├── Repartidor.java
+        │   └── EstadoPedido.java
+        └── vista/
+            ├── VentanaPrincipal.java
+            ├── VentanaRegistroPedido.java
+            ├── VentanaListaPedidos.java
+            └── VentanaAsignarEntrega.java
 ```
 
 ---
@@ -67,69 +82,110 @@ SpeedFast-Poliformismo/
 
 ```mermaid
 classDiagram
+    class Main {
+        +main(String[])
+    }
+
+    class VentanaPrincipal
+    class VentanaRegistroPedido {
+        +guardar()
+    }
+    class VentanaListaPedidos {
+        -DefaultTableModel modeloTabla
+        +cargarPedidos()
+    }
+    class VentanaAsignarEntrega {
+        +asignar()
+        +iniciar()
+    }
+
+    class ControladorPedidos {
+        -List~Pedido~ pedidos
+        +registrarPedido(Pedido)
+        +getPedidos() List
+    }
+    class ControladorRepartidores {
+        +asignarPedido(Pedido, String)
+    }
+    class ControladorEntregas {
+        +iniciarEntrega(Pedido)
+        +simularEntregas()
+    }
+
     class Pedido {
-        -int id
+        <<abstract>>
+        -int idPedido
         -String direccionEntrega
+        -double distanciaKm
+        -String repartidor
         -EstadoPedido estado
-        +getId() int
-        +getDireccionEntrega() String
-        +getEstado() EstadoPedido
-        +setEstado(EstadoPedido)
-        +setEstado(String nuevoEstado)
-        +toString() String
+        +calcularTiempoEntrega()* double
+        +asignarRepartidor()*
+        +getTipo()* String
+        +despachar()
+        +cancelar()
     }
 
-    class EstadoPedido {
-        <<enumeration>>
-        PENDIENTE
-        EN_REPARTO
-        ENTREGADO
-    }
-
-    class ZonaDeCarga {
-        -BlockingQueue~Pedido~ pedidos
-        +agregarPedido(Pedido)
-        +retirarPedido() Pedido
-    }
-
+    class PedidoComida
+    class PedidoEncomienda
+    class PedidoExpress
     class Repartidor {
         -String nombre
-        -ZonaDeCarga zonaDeCarga
+        -List~Pedido~ pedidosAsignados
+    }
+    class TareaEntrega {
+        <<Runnable>>
         +run()
     }
-
-    class Runnable {
-        <<interface>>
-        +run()
+    class EstadoPedido {
+        <<enumeration>>
+        RESERVADO
+        ASIGNADO
+        DESPACHADO
+        CANCELADO
     }
 
+    Main --> VentanaPrincipal
+    VentanaPrincipal --> ControladorPedidos
+    VentanaPrincipal --> ControladorRepartidores
+    VentanaPrincipal --> ControladorEntregas
+    VentanaPrincipal --> VentanaRegistroPedido
+    VentanaPrincipal --> VentanaListaPedidos
+    VentanaPrincipal --> VentanaAsignarEntrega
+    VentanaRegistroPedido --> ControladorPedidos
+    VentanaListaPedidos --> ControladorPedidos
+    VentanaAsignarEntrega --> ControladorPedidos
+    VentanaAsignarEntrega --> ControladorRepartidores
+    VentanaAsignarEntrega --> ControladorEntregas
+    ControladorPedidos o-- Pedido
+    ControladorEntregas --> ControladorPedidos
+    ControladorEntregas --> TareaEntrega
+    TareaEntrega --> Repartidor
+    Pedido <|-- PedidoComida
+    Pedido <|-- PedidoEncomienda
+    Pedido <|-- PedidoExpress
     Pedido --> EstadoPedido
-    ZonaDeCarga o-- Pedido
-    Repartidor --> ZonaDeCarga
-    Runnable <|.. Repartidor
+    Repartidor o-- Pedido
 ```
 
 ### Relaciones
 
 | Relación | Tipo | Descripción |
 |---|---|---|
-| `ZonaDeCarga` → `Pedido` | **Agregación** | La zona guarda los pedidos pendientes en un `BlockingQueue` |
-| `Repartidor` → `ZonaDeCarga` | **Asociación** | Los 3 repartidores usan la **misma** instancia |
-| `Repartidor` | **Hilo** | Implementa `Runnable`; `run()` retira y entrega |
-| `Runnable` | **Interfaz de Java** | `java.lang.Runnable`; no se declara en el proyecto |
-| `setEstado(String)` | **Sobrecarga** | Actualiza el estado desde un texto (`EN_REPARTO`, `ENTREGADO`) |
-| `synchronized` | **Sincronización** | Evita el retiro doble del mismo pedido |
-| `Thread.sleep()` | **Pausa** | Simula el viaje con un tiempo aleatorio (1 a 3 segundos) |
-| `ExecutorService` | **Pool de hilos** | En `Main` lanza a Camila, Luis y Daniela |
+| `VentanaPrincipal` → otras ventanas | **Navegación** | Cada botón abre un `JFrame` distinto |
+| Ventanas → controladores | **Asociación** | Cada ventana usa el controlador que le corresponde |
+| `ControladorPedidos` → `Pedido` | **Agregación** | Los pedidos viven en un `ArrayList` en memoria |
+| Subclases → `Pedido` | **Herencia** | Comida, encomienda y express reutilizan el modelo |
+| `iniciarEntrega` | **Hilo** | Simula el viaje y luego pasa el pedido a `DESPACHADO` |
 
 ---
 
 ## Cómo contribuye el diseño a la calidad del software
 
-- **Integridad de datos:** `agregarPedido` y `retirarPedido` son `synchronized`, así que dos hilos no pueden sacar el mismo pedido.
-- **Escalabilidad:** un nuevo repartidor es otra instancia de `Repartidor`; el pool puede crecer sin cambiar `ZonaDeCarga`.
-- **Reutilización:** la zona de carga es un solo recurso compartido; todos los hilos trabajan sobre la misma cola.
-- **Mantenibilidad:** cada clase tiene una responsabilidad: pedido, zona o hilo de entrega. `Main` solo arma la simulación y espera el cierre.
+- **Separación MVC:** el modelo no dibuja ventanas; la vista no guarda la lista; el controlador comparte los datos.
+- **Reutilización:** se mantienen `Pedido`, las subclases y los estados de las semanas anteriores.
+- **Mantenibilidad:** cada ventana tiene una responsabilidad (registrar, listar o asignar).
+- **Usabilidad:** validación antes de guardar, confirmaciones con `JOptionPane` y tabla de solo lectura.
 
 ---
 
@@ -137,84 +193,68 @@ classDiagram
 
 ### Requisitos previos
 
-- Java JDK 17 o superior (el proyecto fue compilado y probado con JDK 26)
+- Java JDK 17 o superior
 - Maven 3.x (o abrir directamente en IntelliJ IDEA)
 
 ### Opción A – Desde IntelliJ IDEA (recomendada)
 
 1. Abrir el repositorio como proyecto Maven en IntelliJ IDEA.
-2. Si no aparece Run, clic derecho en `semana 5/pom.xml` → **Add as Maven Project**.
-3. Navegar a `semana 5/src/main/java/org/speedFast/app/Main.java`.
+2. Si no aparece Run, clic derecho en `semana 6/pom.xml` → **Add as Maven Project**.
+3. Navegar a `semana 6/src/main/java/main/Main.java`.
 4. Hacer clic derecho → **Run 'Main.main()'**.
 
 ### Opción B – Desde terminal con Maven
 
 ```bash
-cd "semana 5"
+cd "semana 6"
 mvn compile
-mvn exec:java -Dexec.mainClass="org.speedFast.app.Main"
+mvn exec:java -Dexec.mainClass="main.Main"
 ```
 
 ### Opción C – Desde terminal (sin Maven)
 
 ```bash
-cd "semana 5"
+cd "semana 6"
 mkdir -p out
 javac -encoding UTF-8 -d out $(find src/main/java -name "*.java")
-java -cp out org.speedFast.app.Main
+java -cp out main.Main
 ```
 
 ---
 
-## Salida esperada por consola
+## Flujo esperado en la interfaz
 
-El orden de las líneas de Camila, Luis y Daniela **cambia en cada ejecución** porque los hilos corren a la vez. Lo que no cambia: cada pedido se retira una sola vez y termina en `ENTREGADO`.
+Al iniciar se abre **VentanaPrincipal** con cuatro botones.
 
-```
-[Zona de carga inicializada]
-Pedido #1 agregado. Destino: Santiago Centro
-Pedido #2 agregado. Destino: Providencia
-Pedido #3 agregado. Destino: Ñuñoa
-Pedido #4 agregado. Destino: Recoleta
-Pedido #5 agregado. Destino: Las Condes
-[Repartidor - Camila] Retirando pedido #1...
-[Repartidor - Camila] Estado: EN_REPARTO
-[Repartidor - Camila] Entregando pedido #1...
-[Repartidor - Luis] Retirando pedido #2...
-[Repartidor - Luis] Estado: EN_REPARTO
-[Repartidor - Luis] Entregando pedido #2...
-[Repartidor - Daniela] Retirando pedido #3...
-[Repartidor - Daniela] Estado: EN_REPARTO
-[Repartidor - Daniela] Entregando pedido #3...
-...
-[Zona de carga vacía]
-[Repartidor - Camila] Estado: ENTREGADO
-...
-Todos los pedidos han sido entregados correctamente.
-```
+| Botón | Ventana | Qué hace |
+|---|---|---|
+| Registrar pedido | `VentanaRegistroPedido` | Pide ID, dirección, distancia y tipo (`JComboBox`). En encomienda también pide peso y si es frágil. **Guardar** valida, crea el pedido y muestra un `JOptionPane` de confirmación. |
+| Listar pedidos | `VentanaListaPedidos` | Muestra una `JTable` con `DefaultTableModel`. Se actualiza sola al registrar o despachar, y también con **Actualizar**. |
+| Asignar repartidor / Iniciar entrega | `VentanaAsignarEntrega` | Se elige un pedido y un repartidor. **Asignar** deja el estado en `ASIGNADO`. **Iniciar entrega** lanza un hilo `TareaEntrega`. |
+| Simular entregas | Área de actividad | Un hilo por repartidor, en paralelo. Los mensajes aparecen en el `JTextArea`. |
 
-| Repartidor | Qué hace |
-|---|---|
-| Camila, Luis y Daniela | Compiten por la zona de carga; cada uno toma un pedido distinto |
+Hay tres pedidos de ejemplo al partir: `#101` comida, `#102` encomienda y `#103` express.
 
 ---
 
 ## Buenas prácticas aplicadas
 
-- `ZonaDeCarga` guarda los pedidos en un `BlockingQueue<Pedido>` (recurso compartido).
-- `agregarPedido` y `retirarPedido` son `synchronized` para evitar condiciones de carrera.
-- Solo se agregan pedidos con estado `PENDIENTE`.
-- `retirarPedido()` usa `poll()`: saca el primer pedido o devuelve `null` si la zona está vacía.
-- `Pedido` actualiza el estado con `setEstado(String nuevoEstado)`, como piden las instrucciones.
-- `Repartidor` implementa `Runnable` y simula la entrega con `Thread.sleep()`.
-- `ExecutorService` lanza 3 repartidores; el cierre se hace con `shutdown()` y `awaitTermination`.
-- Manejo de `InterruptedException` e `IllegalArgumentException`.
-- Separación de responsabilidades en paquetes `model`, `util` y `app`.
+- Paquetes `modelo`, `vista`, `main` y `controlador`.
+- `Main` arranca con `new VentanaPrincipal()`.
+- Layouts `BorderLayout` y `GridLayout`.
+- Formulario con `JTextField`, `JComboBox`, `JCheckBox` y `JButton`.
+- Listado con `JTable` + `DefaultTableModel` de solo lectura (`isCellEditable` = false).
+- Validación de campos vacíos, números, ID repetido, distancia y peso.
+- Mensajes con `JOptionPane` (información, advertencia, error y confirmación).
+- Un controlador por tipo de dato: `ControladorPedidos`, `ControladorRepartidores` y `ControladorEntregas`.
+- Paquete `tareas`: `TareaEntrega` implementa `Runnable` y corre en un `Thread`.
+- `Repartidor` queda en `modelo` (nombre y pedidos); no ejecuta el hilo.
+- `TareaEntrega` escribe en el `JTextArea` desde el hilo.
 
 ---
 
 **Repositorio GitHub:** https://github.com/Be-ri-lo/SpeedFast-Poliformismo
 
-**Fecha de entrega:** Semana 5 – Septiembre 2026
+**Fecha de entrega:** Semana 6 – Septiembre 2026
 
 © Duoc UC | Escuela de Informática y Telecomunicaciones
