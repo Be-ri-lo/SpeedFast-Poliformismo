@@ -45,35 +45,30 @@ La distancia se valida entre **0.1 km** y **100 km**. El ID no se puede repetir.
 La entrega de esta semana está en la carpeta **`semana 6`**, con los paquetes `modelo`, `vista`, `main` y `controlador`.
 
 ```
-SpeedFast-Poliformismo/
-├── src/                             → Semana 4 (código de la raíz)
-├── semana 3/                        → Semana 3 (historial)
-├── semana4/                         → Semana 4 (historial)
-├── semana 5/                        → Semana 5 (historial)
-└── semana 6/                        → Semana 6 (entrega formativa)
-    ├── pom.xml
-    ├── README.md
-    └── src/main/java/
-        ├── main/
-        │   └── Main.java                    → new VentanaPrincipal()
-        ├── controlador/
-        │   ├── ControladorPedidos.java      → lista de pedidos en memoria
-        │   ├── ControladorRepartidores.java → nombres y asignación
-        │   └── ControladorEntregas.java     → hilos de TareaEntrega
-        ├── tareas/
-        │   └── TareaEntrega.java            → implements Runnable (hilo de entrega)
-        ├── modelo/
-        │   ├── Pedido.java                  → clase abstracta
-        │   ├── PedidoComida.java
-        │   ├── PedidoEncomienda.java
-        │   ├── PedidoExpress.java
-        │   ├── Repartidor.java
-        │   └── EstadoPedido.java
-        └── vista/
-            ├── VentanaPrincipal.java
-            ├── VentanaRegistroPedido.java
-            ├── VentanaListaPedidos.java
-            └── VentanaAsignarEntrega.java
+semana 6/
+├── pom.xml
+├── README.md
+└── src/main/java/
+    ├── main/
+    │   └── Main.java                    → new VentanaPrincipal()
+    ├── controlador/
+    │   ├── ControladorPedidos.java      → lista de pedidos en memoria
+    │   ├── ControladorRepartidores.java → nombres y asignación
+    │   └── ControladorEntregas.java     → hilos de TareaEntrega
+    ├── tareas/
+    │   └── TareaEntrega.java            → implements Runnable (hilo de entrega)
+    ├── modelo/
+    │   ├── Pedido.java                  → clase abstracta
+    │   ├── PedidoComida.java
+    │   ├── PedidoEncomienda.java
+    │   ├── PedidoExpress.java
+    │   ├── Repartidor.java
+    │   └── EstadoPedido.java
+    └── vista/
+        ├── VentanaPrincipal.java
+        ├── VentanaRegistroPedido.java
+        ├── VentanaListaPedidos.java
+        └── VentanaAsignarEntrega.java
 ```
 
 ---
