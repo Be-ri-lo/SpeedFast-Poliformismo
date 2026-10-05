@@ -65,6 +65,8 @@ semana7/
 ├── pom.xml                 → mysql-connector-j 9.4.0
 ├── script.sql              → CREATE DATABASE / tablas / FK
 ├── README.md
+├── lib/
+│   └── mysql-connector-j-9.4.0.jar
 └── src/main/java/
     ├── app/Main.java
     ├── conexion/ConexionBD.java

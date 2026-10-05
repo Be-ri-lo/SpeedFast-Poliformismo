@@ -39,8 +39,9 @@ El detalle de cada paso de la guía está en `semana8/README.md`.
 
 1. Tener MySQL encendido y ejecutar `semana8/script.sql`.
 2. En IntelliJ: clic derecho en `semana8/pom.xml` → **Add as Maven Project**.
-3. Copiar `semana8/conexion.properties.ejemplo` a `semana8/conexion.properties` y completar la clave.
-4. Ejecutar `semana8/src/main/java/app/Main.java`.
+3. El driver está en `semana8/lib/mysql-connector-j-9.4.0.jar`.
+4. Copiar `semana8/conexion.properties.ejemplo` a `semana8/conexion.properties` y completar la clave.
+5. Ejecutar `semana8/src/main/java/app/Main.java`.
 
 La clave de MySQL **no se sube a GitHub**. Al docente se le indica en el informe o en el mensaje de la plataforma.
 

@@ -28,8 +28,9 @@ La aplicación de semanas anteriores quedó conectada a MySQL. Cada pantalla de 
 
 1. Encender MySQL y correr `script.sql` en Workbench.
 2. En IntelliJ: clic derecho en `semana8/pom.xml` → **Add as Maven Project**.
-3. Copiar `conexion.properties.ejemplo` a `conexion.properties` y completar `db.clave`.
-4. Ejecutar `src/main/java/app/Main.java`.
+3. El driver JDBC está en `lib/mysql-connector-j-9.4.0.jar` (también lo baja Maven).
+4. Copiar `conexion.properties.ejemplo` a `conexion.properties` y completar `db.clave`.
+5. Ejecutar `src/main/java/app/Main.java`.
 
 Ese archivo de clave **no se sube a GitHub**. Usuario y clave se entregan al docente por separado (informe o mensaje de la plataforma).
 
@@ -110,6 +111,8 @@ semana8/
 ├── pom.xml
 ├── script.sql
 ├── README.md
+├── lib/
+│   └── mysql-connector-j-9.4.0.jar
 └── src/main/java/
     ├── app/Main.java
     ├── conexion/ConexionDB.java
