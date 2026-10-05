@@ -1,0 +1,147 @@
+package modelo;
+
+/**
+ * Pedido de SpeedFast. Las subclases definen tipo y tiempo de entrega.
+ * La persistencia está en PedidoDAO.
+ */
+public abstract class Pedido implements Despachable, Cancelable, Rastreable {
+
+    private int idPedido;
+    private String direccionEntrega;
+    private double distanciaKm;
+    private String repartidor;
+    private EstadoPedido estado;
+
+    public Pedido(int idPedido, String direccionEntrega, double distanciaKm) {
+        if (idPedido < 0) {
+            throw new IllegalArgumentException("El ID del pedido no puede ser negativo");
+        }
+        if (direccionEntrega == null || direccionEntrega.isBlank()) {
+            throw new IllegalArgumentException("La dirección de entrega es obligatoria");
+        }
+        this.idPedido = idPedido;
+        this.direccionEntrega = direccionEntrega.trim();
+        setDistanciaKm(distanciaKm);
+        this.repartidor = "Sin asignar";
+        this.estado = EstadoPedido.RESERVADO;
+    }
+
+    public abstract double calcularTiempoEntrega();
+
+    public abstract void asignarRepartidor();
+
+    public abstract String getTipo();
+
+    /** Asigna el repartidor elegido y deja el pedido en estado ASIGNADO. */
+    public void asignarRepartidor(String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            throw new IllegalArgumentException("El nombre del repartidor no puede estar vacío");
+        }
+        if (estado == EstadoPedido.CANCELADO) {
+            throw new IllegalStateException("No se puede asignar un repartidor a un pedido cancelado");
+        }
+        if (estado == EstadoPedido.DESPACHADO) {
+            throw new IllegalStateException("No se puede reasignar un pedido ya despachado");
+        }
+        this.repartidor = nombre.trim();
+        this.estado = EstadoPedido.ASIGNADO;
+    }
+
+    @Override
+    public void despachar() {
+        if (estado == EstadoPedido.CANCELADO) {
+            throw new IllegalStateException("No se puede despachar un pedido cancelado");
+        }
+        if (estado != EstadoPedido.ASIGNADO) {
+            throw new IllegalStateException("Debe asignarse un repartidor antes de despachar");
+        }
+        this.estado = EstadoPedido.DESPACHADO;
+    }
+
+    @Override
+    public void cancelar() {
+        if (estado == EstadoPedido.DESPACHADO) {
+            throw new IllegalStateException("No se puede cancelar un pedido ya despachado");
+        }
+        if (estado == EstadoPedido.CANCELADO) {
+            throw new IllegalStateException("El pedido ya está cancelado");
+        }
+        this.estado = EstadoPedido.CANCELADO;
+    }
+
+    @Override
+    public void verHistorial() {
+        System.out.println(getTipo() + " #" + formatearId()
+                + " | Estado: " + estado.getEtiqueta()
+                + " | Repartidor: " + repartidor);
+    }
+
+    public void mostrarResumen() {
+        System.out.println(getClass().getSimpleName() + " #" + formatearId());
+        System.out.println("Dirección: " + direccionEntrega);
+        System.out.println("Distancia: " + distanciaKm + " km");
+        System.out.println("Repartidor asignado: " + repartidor);
+        System.out.println("Estado: " + estado.getEtiqueta());
+        System.out.println("Tiempo estimado: " + calcularTiempoEntrega() + " minutos");
+    }
+
+    public String formatearId() {
+        return String.format("%03d", idPedido);
+    }
+
+    public void setDistanciaKm(double distanciaKm) {
+        if (distanciaKm < 0.1 || distanciaKm > 100) {
+            throw new IllegalArgumentException("La distancia de reparto debe estar entre 0.1 km y 100 km");
+        }
+        this.distanciaKm = distanciaKm;
+    }
+
+    public void setRepartidor(String repartidor) {
+        this.repartidor = repartidor;
+        this.estado = EstadoPedido.ASIGNADO;
+    }
+
+    public void setIdPedido(int idPedido) {
+        this.idPedido = idPedido;
+    }
+
+    public void setEstado(EstadoPedido estado) {
+        this.estado = estado;
+    }
+
+    public void setNombreRepartidor(String repartidor) {
+        this.repartidor = (repartidor == null || repartidor.isBlank()) ? "Sin asignar" : repartidor.trim();
+    }
+
+    public int getIdPedido() {
+        return idPedido;
+    }
+
+    public void setDireccionEntrega(String direccionEntrega) {
+        if (direccionEntrega == null || direccionEntrega.isBlank()) {
+            throw new IllegalArgumentException("La dirección de entrega es obligatoria");
+        }
+        this.direccionEntrega = direccionEntrega.trim();
+    }
+
+    public String getDireccionEntrega() {
+        return direccionEntrega;
+    }
+
+    @Override
+    public String toString() {
+        return formatearId() + " - " + direccionEntrega;
+    }
+
+    public double getDistanciaKm() {
+        return distanciaKm;
+    }
+
+    public String getRepartidor() {
+        return repartidor;
+    }
+
+    public EstadoPedido getEstado() {
+        return estado;
+    }
+}
