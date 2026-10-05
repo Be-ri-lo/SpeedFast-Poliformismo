@@ -1,0 +1,7 @@
+# Copiar este archivo a conexion.properties y completar db.clave.
+# conexion.properties NO se sube a GitHub (está en .gitignore).
+# La clave se entrega al docente por la plataforma / informe, no en el repositorio.
+
+db.url=jdbc:mysql://localhost:3306/speedfast_db?serverTimezone=America/Santiago
+db.usuario=root
+db.clave=
